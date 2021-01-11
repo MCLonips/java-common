@@ -1,13 +1,16 @@
-name: Build and test project
-on: [push, pull_request]
+name: Release project
+on:
+  release:
+    types:
+      - created
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        versions: [11, 15]
+        versions: [ 11 ]
     runs-on: ubuntu-latest
-    name: Build and test Java ${{ matrix.versions }} projects
+    name: Release with Java ${{ matrix.versions }} projects
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK ${{ matrix.versions }}
@@ -20,5 +23,9 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Build all projects with Maven
+      - name: Deploy projects
         run: mvn --batch-mode clean verify
+      - name: Deploy projects
+        run: mvn --batch-mode deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
